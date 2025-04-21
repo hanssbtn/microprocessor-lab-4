@@ -11,17 +11,21 @@ void init_timer3(void) {
 	DIDR0 = 0xFF;
 }
 
-#define ADC_MAX 0x3FFL // 1023 for 10-bit ADC
-#define ADC_CENTER (ADC_MAX / 2) // 511
-#define PWM_MAX 0x3FFL // 1023 for 10-bit Fast PWM
-#define DEAD_ZONE 0 // Adjust sensitivity around center (e.g., +/- 512)
+// Motor Control Constants
+#define ADC_MAX 0x3FF       // 10-bit ADC maximum (1023)
+#define ADC_CENTER (ADC_MAX / 2)  // Center point (511)
+#define PWM_MAX 0x3FF       // 10-bit PWM maximum (1023)
+#define DEAD_ZONE 0        // ±0 count neutral zone (adjust if needed)
 
+// Duty Cycle Adjustment (Direction + Speed Control)
 void change_duty_cycle(int16_t analog_magnitude) {
     uint16_t duty_cycle = 0;
 
-    // Counter-clockwise
+	/*
+	* Counter-clockwise Rotation (Left of Center)
+	* analog_magnitude range: 0 to (ADC_CENTER - DEAD_ZONE - 1)
+	*/
     if (analog_magnitude < (ADC_CENTER - DEAD_ZONE)) {
-        // Calculate speed: Map [0, ADC_CENTER - DEAD_ZONE - 1] to [PWM_MAX, 0]
         duty_cycle = (ADC_CENTER - analog_magnitude) * 2;        
         // Set direction pins to move counter-clockwise (PH4 == 1, PH3 == 0)
         PORTH = (1 << PH4);
